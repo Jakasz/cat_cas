@@ -7,8 +7,6 @@ class TextRenderPaint {
 
   final TextPaint _regular = TextPaint(
     style: TextStyle(
-        fontSize: 2.5,
-        color: BasicPalette.white.color,
-        fontFamily: 'Erica One'),
+        fontSize: 25, color: BasicPalette.white.color, fontFamily: 'Erica One'),
   );
 }

@@ -7,14 +7,16 @@ import 'package:cas_cat/components/shop_image.dart';
 
 import 'package:cas_cat/pages/main_game.dart';
 import 'package:flame/components.dart';
-import 'package:flame/input.dart';
+import 'package:flame/events.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Shop extends Component with HasGameRef<MainGameScreen> {
   bool pageCanBeUsed = true;
   late List<Component> imageList;
   late SharedPreferences prefs;
-  int imageIndex = 1;
+  int imageIndex = 0;
+  String inputText = 'BUY';
+  String coinAmount = '10';
   void goBack() {
     if (!pageCanBeUsed) {
       return;
@@ -27,156 +29,257 @@ class Shop extends Component with HasGameRef<MainGameScreen> {
     if (!pageCanBeUsed) {
       return;
     }
-    if (imageIndex < imageList.length - 1) {
-      imageIndex++;
-      for (final child in [...children]) {
-        if (child is ShopImage) {
-          remove(child);
-        }
-      }
-      add(imageList[imageIndex]);
+    imageIndex++;
+    if (imageIndex == imageList.length) {
+      imageIndex = 0;
     }
+    resetBuyButton();
   }
 
   void leftArrowAction() {
     if (!pageCanBeUsed) {
       return;
     }
-    if (imageIndex > 0) {
-      imageIndex--;
-      for (final child in [...children]) {
-        if (child is ShopImage) {
-          remove(child);
-        }
-      }
-      add(imageList[imageIndex]);
+    imageIndex--;
+
+    if (imageIndex == -1) {
+      imageIndex = imageList.length - 1;
     }
+
+    resetBuyButton();
+  }
+
+  void resetBuyButton() {
+    removeButtonComponents();
+    for (final child in [...children]) {
+      if (child is ShopImage) {
+        remove(child);
+      }
+    }
+    addButtonComponents();
+    add(imageList[imageIndex]);
   }
 
   void buy() {
     if (!pageCanBeUsed) {
       return;
     }
-    var score = prefs.getInt('score') ?? 0;
-    if (score < 10) {
-      return;
+
+    Set<String>? boughtItems =
+        prefs.getStringList('storedBackgrounds')!.toSet();
+
+    if (!boughtItems.contains(imageIndex.toString())) {
+      var score = prefs.getInt('score') ?? 0;
+      if (score < 10) {
+        return;
+      }
+      prefs.setInt('score', score - 10);
+      boughtItems.add(imageIndex.toString());
+      prefs.setStringList('storedBackgrounds', boughtItems.toList());
+      resetBuyButton();
+    } else if (boughtItems.contains(imageIndex.toString())) {
+      if (prefs.getInt('selected') == imageIndex) {
+        return;
+      }
+      prefs.setInt('selected', imageIndex);
+      resetBuyButton();
     }
-    prefs.setInt('score', score - 10);
   }
 
   @override
   void update(double dt) {
-    pageCanBeUsed = gameRef.router.currentRoute.name == 'shop';
     super.update(dt);
+    pageCanBeUsed = gameRef.router.currentRoute.name == 'shop';
+  }
+
+  void resetTextFields() {
+    inputText = 'BUY';
+    coinAmount = '10';
   }
 
   @override
-  FutureOr<void> onLoad() async {
-    await super.onLoad();
+  FutureOr<void> onLoad() {
+    super.onLoad();
     imageList = ShopBackground().backgrounds;
-    prefs = await SharedPreferences.getInstance();
+    prefs = gameRef.prefs;
     add(SpriteComponent()
-      ..sprite = await Sprite.load('shop_background.png')
+      ..sprite = Sprite(gameRef.images.fromCache('shop_background.png'))
       ..size = gameRef.size
       ..position = Vector2.zero());
     final LeftArrow backButton = LeftArrow(goBack);
     backButton
-      ..sprite = await Sprite.load('left_btn.png')
-      ..position = Vector2(2, 4)
-      ..size = Vector2(6, 6);
+      ..sprite = Sprite(gameRef.images.fromCache('left_btn.png'))
+      ..position =
+          Vector2(gameRef.size.x * 0.014 * 2, gameRef.size.y * 0.020 * 2)
+      ..size = Vector2(gameRef.size.x * 0.06 * 2, gameRef.size.x * 0.06 * 2);
     add(backButton);
-
     add(SpriteComponent()
-      ..sprite = await Sprite.load('score_back.png')
-      ..size = Vector2(11, 5)
-      ..position = Vector2(25, 3));
+      ..sprite = Sprite(gameRef.images.fromCache('score_back.png'))
+      ..size =
+          Vector2(gameRef.size.x * 0.117 * 2.6, gameRef.size.x * 0.054 * 2.5)
+      ..position = Vector2(gameRef.size.x - gameRef.size.x * 0.117 * 2.65,
+          gameRef.size.x * 0.054));
     add(SpriteComponent()
-      ..sprite = await Sprite.load('score_coin.png')
-      ..size = Vector2.all(3)
-      ..position = Vector2(25.2, 4.5));
-    add(ScoreText(Vector2(28.2, 3.6)));
+      ..sprite = Sprite(gameRef.images.fromCache('score_coin.png'))
+      ..size = Vector2.all(gameRef.size.x * 0.03 * 3)
+      ..position = Vector2(gameRef.size.x - gameRef.size.x * 0.117 * 2.4,
+          gameRef.size.x * 0.054 * 1.5));
+    add(ScoreText(Vector2(gameRef.size.x - gameRef.size.x * 0.117 * 1.6,
+        gameRef.size.x * 0.054 * 1.5)));
+    var boardPositionX = gameRef.size.x / 2 - gameRef.size.x * 0.282 * 2.5 / 2;
     add(SpriteComponent()
-      ..sprite = await Sprite.load('board.png')
-      ..size = Vector2.all(26)
-      ..position = Vector2(7, 13));
+      ..sprite = Sprite(gameRef.images.fromCache('board.png'))
+      ..size = Vector2.all(gameRef.size.x * 0.282 * 2.5)
+      ..position = Vector2(boardPositionX, gameRef.size.y * 0.15));
+    var rightArrowPositionX = boardPositionX +
+        gameRef.size.x * 0.282 * 2.5 -
+        gameRef.size.x * 0.047 * 3.5 / 2;
+    var rightArrowPositionY = gameRef.size.y * 0.15 +
+        (gameRef.size.x * 0.282 * 2.5) / 2 -
+        gameRef.size.x * 0.068;
     final RightArrow rightArrow = RightArrow(rightArrowAction);
     rightArrow
-      ..sprite = await Sprite.load('ritgh_arrow.png')
-      ..size = Vector2(6, 5)
-      ..position = Vector2(30, 23);
+      ..sprite = Sprite(gameRef.images.fromCache('ritgh_arrow.png'))
+      ..size = Vector2(gameRef.size.x * 0.047 * 3.5, gameRef.size.x * 0.068 * 2)
+      ..position = Vector2(rightArrowPositionX, rightArrowPositionY);
     add(rightArrow);
+
+    var leftArrowPositionX = boardPositionX - gameRef.size.x * 0.047 * 3.5 / 2;
+    var leftArrowPositionY = gameRef.size.y * 0.15 +
+        (gameRef.size.x * 0.282 * 2.5) / 2 -
+        gameRef.size.x * 0.068;
     final LeftArrow leftArrow = LeftArrow(leftArrowAction);
     leftArrow
-      ..sprite = await Sprite.load('left_arrow.png')
-      ..size = Vector2(6, 5)
-      ..position = Vector2(4, 23);
+      ..sprite = Sprite(gameRef.images.fromCache('left_arrow.png'))
+      ..size = Vector2(gameRef.size.x * 0.047 * 3.5, gameRef.size.x * 0.068 * 2)
+      ..position = Vector2(leftArrowPositionX, leftArrowPositionY);
     add(leftArrow);
     add(imageList[0]);
     final BuyButton buyButton = BuyButton(buy);
     buyButton
-      ..sprite = await Sprite.load('buy_btn_background.png')
-      ..size = Vector2(13, 7)
-      ..position = Vector2(14, 34);
+      ..sprite = Sprite(gameRef.images.fromCache('buy_btn_background.png'))
+      ..size = Vector2(gameRef.size.x * .163 * 2, gameRef.size.x * .075 * 2)
+      ..position = Vector2(gameRef.size.x / 2 - gameRef.size.x * .163,
+          gameRef.size.y * 0.15 + gameRef.size.x * 0.282 * 2.2);
     add(buyButton);
-    add(ShopText(Vector2(17.5, 34.5), 'BUY'));
-    add(ShopText(Vector2(17, 36.5), '10'));
-    add(SpriteComponent()
-      ..sprite = await Sprite.load('coin.png')
-      ..size = Vector2.all(2.5)
-      ..position = Vector2(20.5, 37.5));
-    add(SpriteComponent()
-      ..sprite = await Sprite.load('box_area.png')
-      ..size = Vector2(35, 26)
-      ..position = Vector2(2, 45));
+
+    addButtonComponents();
 
     add(SpriteComponent()
-      ..sprite = await Sprite.load('basket_1.png')
-      ..size = Vector2(14.5, 10)
-      ..position = Vector2(3, 47));
+      ..sprite = Sprite(gameRef.images.fromCache('box_area.png'))
+      ..size = Vector2(gameRef.size.x * 0.9, gameRef.size.y * 0.262 * 1.3)
+      ..position = Vector2(
+          gameRef.size.x / 2 - gameRef.size.x * 0.9 / 2, gameRef.size.y * .55));
+    var basketSize =
+        Vector2(gameRef.size.x * .129 * 3, gameRef.size.y * .06 * 2);
     add(SpriteComponent()
-      ..sprite = await Sprite.load('basket_2.png')
-      ..size = Vector2(14.5, 10)
-      ..position = Vector2(20.5, 47));
+      ..sprite = Sprite(gameRef.images.fromCache('basket_1.png'))
+      ..size = basketSize
+      ..position = Vector2(
+          gameRef.size.x / 2 - gameRef.size.x * 0.8 / 2, gameRef.size.y * .59));
     add(SpriteComponent()
-      ..sprite = await Sprite.load('basket_3.png')
-      ..size = Vector2(14.5, 10)
-      ..position = Vector2(3, 59));
+      ..sprite = Sprite(gameRef.images.fromCache('basket_2.png'))
+      ..size = basketSize
+      ..position = Vector2(
+          gameRef.size.x / 2 -
+              gameRef.size.x * 0.8 / 2 +
+              gameRef.size.x * .129 * 3.2,
+          gameRef.size.y * .59));
     add(SpriteComponent()
-      ..sprite = await Sprite.load('basket_4.png')
-      ..size = Vector2(14.5, 10)
-      ..position = Vector2(20.5, 59));
+      ..sprite = Sprite(gameRef.images.fromCache('basket_3.png'))
+      ..size = basketSize
+      ..position = Vector2(gameRef.size.x / 2 - gameRef.size.x * 0.8 / 2,
+          gameRef.size.y * .62 + basketSize.y));
+    add(SpriteComponent()
+      ..sprite = Sprite(gameRef.images.fromCache('basket_4.png'))
+      ..size = basketSize
+      ..position = Vector2(
+          gameRef.size.x / 2 -
+              gameRef.size.x * 0.8 / 2 +
+              gameRef.size.x * .129 * 3.2,
+          gameRef.size.y * .62 + basketSize.y));
+  }
+
+  void addButtonComponents() {
+    Set<String>? boughtItems =
+        prefs.getStringList('storedBackgrounds')!.toSet();
+    var selectedBackgdound = prefs.getInt('selected') ?? -1;
+
+    if (boughtItems.contains(imageIndex.toString())) {
+      coinAmount = '';
+      if (selectedBackgdound == imageIndex) {
+        inputText = 'USED';
+      } else {
+        inputText = 'USE';
+      }
+    } else {
+      resetTextFields();
+    }
+    add(ShopText(
+        Vector2(gameRef.size.x / 2.45,
+            gameRef.size.y * 0.15 + gameRef.size.x * 0.282 * 2.22),
+        inputText));
+    add(ShopText(
+        Vector2(gameRef.size.x / 2.45,
+            gameRef.size.y * 0.15 + gameRef.size.x * 0.282 * 2.4),
+        coinAmount));
+    if (coinAmount != '') {
+      add(BuyCoin());
+    }
+  }
+
+  void removeButtonComponents() {
+    for (final child in [...children]) {
+      if (child is ShopText) {
+        remove(child);
+      } else if (child is BuyCoin) {
+        remove(child);
+      }
+    }
   }
 }
 
-class BuyButton extends SpriteComponent with Tappable {
+class BuyButton extends SpriteComponent with TapCallbacks {
   final Function buy;
 
   BuyButton(this.buy);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     buy();
-    return super.onTapDown(info);
+    super.onTapDown(event);
   }
 }
 
-class LeftArrow extends SpriteComponent with Tappable {
+class LeftArrow extends SpriteComponent with TapCallbacks {
   final Function left;
 
   LeftArrow(this.left);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     left();
-    return super.onTapDown(info);
+    super.onTapDown(event);
   }
 }
 
-class RightArrow extends SpriteComponent with Tappable {
+class RightArrow extends SpriteComponent with TapCallbacks {
   final Function right;
 
   RightArrow(this.right);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     right();
-    return super.onTapDown(info);
+    super.onTapDown(event);
+  }
+}
+
+class BuyCoin extends Component with HasGameRef<MainGameScreen> {
+  @override
+  FutureOr<void> onLoad() {
+    add(SpriteComponent()
+      ..sprite = Sprite(gameRef.images.fromCache('coin.png'))
+      ..size = Vector2.all(gameRef.size.x * 0.03 * 1.8)
+      ..position = Vector2(gameRef.size.x / 2,
+          gameRef.size.y * 0.15 + gameRef.size.x * 0.282 * 2.48));
+    super.onLoad();
   }
 }

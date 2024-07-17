@@ -12,15 +12,15 @@ class ScoreText extends TextComponent with HasGameRef<MainGameScreen> {
   late final SharedPreferences prefs;
   final regular = TextPaint(
     style: TextStyle(
-        fontSize: 3.0,
+        fontSize: 22.0,
         color: BasicPalette.white.color,
         fontFamily: 'Erica One'),
   );
 
   ScoreText(this.positionScore);
   @override
-  FutureOr<void> onLoad() async {
-    await super.onLoad();
+  FutureOr<void> onLoad() {
+    super.onLoad();
 
     text = score.toString();
     textRenderer = regular;

@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:cas_cat/components/brick_5.dart';
 import 'package:cas_cat/components/lives.dart';
+import 'package:cas_cat/components/refresh_btn.dart';
 import 'package:cas_cat/components/simple_text.dart';
 import 'package:cas_cat/components/super_g_basket.dart';
 import 'package:cas_cat/components/timer_text.dart';
 import 'package:cas_cat/components/wall.dart';
 import 'package:cas_cat/pages/main_game.dart';
 import 'package:flame/components.dart';
-import 'package:flame/input.dart';
+import 'package:flame/events.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../components/brick_1.dart';
 import '../components/brick_2.dart';
@@ -20,8 +21,7 @@ class SuperGame extends Component with HasGameRef<MainGameScreen> {
   bool isCanBeUsed = true;
   bool needToDestroy = false;
   int livesCount = 3;
-  int coinAmount = 3;
-  int timerTicks = 10;
+  int timerTicks = 60;
   late TimerComponent timer;
   late SharedPreferences prefs;
   int score = 0;
@@ -33,7 +33,6 @@ class SuperGame extends Component with HasGameRef<MainGameScreen> {
 
     var failScore = prefs.getInt('failScore') ?? 0;
     if (failScore > 2) {
-      coinAmount = 3;
       prefs.setInt('failScore', 0);
       needToDestroy = true;
     }
@@ -76,22 +75,18 @@ class SuperGame extends Component with HasGameRef<MainGameScreen> {
     if (!isCanBeUsed) {
       return;
     }
-    if (coinAmount > 0) {
-      coinAmount--;
-      final body1 = Coin(Vector2(-30, 200) * 10);
-      add(body1);
-    }
+
+    final body1 = Coin(Vector2(-30, 200) * 1000);
+    add(body1);
   }
 
   void addCoinLeft() {
     if (!isCanBeUsed) {
       return;
     }
-    if (coinAmount > 0) {
-      coinAmount--;
-      final body2 = Coin(Vector2(95, 100) * 10);
-      add(body2);
-    }
+
+    final body2 = Coin(Vector2(95, 100) * 1000);
+    add(body2);
   }
 
   @override
@@ -109,17 +104,17 @@ class SuperGame extends Component with HasGameRef<MainGameScreen> {
     add(background);
     add(SpriteComponent()
       ..sprite = await Sprite.load('cat_with_coin.png')
-      ..position = Vector2(9, 2)
-      ..size = Vector2(20, 20));
+      ..position = Vector2(gameRef.size.x / 4.5, gameRef.size.y * 0.01)
+      ..size = Vector2(223, 247));
     rightBtn
       ..sprite = await Sprite.load('right_btn.png')
-      ..position = Vector2(30, 20)
-      ..size = Vector2(6, 6);
+      ..position = Vector2(gameRef.size.x * 0.75, gameRef.size.y * 0.22)
+      ..size = Vector2(60, 60);
     add(rightBtn);
     leftBtn
       ..sprite = await Sprite.load('left_btn.png')
-      ..position = Vector2(5, 20)
-      ..size = Vector2(6, 6);
+      ..position = Vector2(gameRef.size.x * 0.1, gameRef.size.y * 0.22)
+      ..size = Vector2(60, 60);
     add(leftBtn);
     add(Brick());
     add(Brick2());
@@ -131,8 +126,8 @@ class SuperGame extends Component with HasGameRef<MainGameScreen> {
 
     add(SpriteComponent()
       ..sprite = await Sprite.load('score_back.png')
-      ..size = Vector2(9.1, 4.2)
-      ..position = Vector2(2, 2));
+      ..size = Vector2(117, 54)
+      ..position = Vector2(17, 14));
 
     add(Walls(Vector2.zero(), Vector2(0, gameRef.size.y)));
     add(Walls(
@@ -141,38 +136,35 @@ class SuperGame extends Component with HasGameRef<MainGameScreen> {
 
     add(addTimer());
 
-    add(TimerText(pos: Vector2(4, 3.3), textSize: Vector2(10, 1)));
+    add(TimerText(
+        pos: Vector2(gameRef.size.x * 0.07, gameRef.size.y * 0.025),
+        textSize: Vector2(10, 1)));
     add(SimpleText(
         fontTextSize: 1.5,
         inputText: 'TIME',
         pos: Vector2(4.3, 2),
         textSize: Vector2(10, 1)));
-    final RefreshBtn refreshBtn = RefreshBtn(refreshGame);
-    refreshBtn
-      ..sprite = await Sprite.load('refresh.png')
-      ..size = Vector2(8, 8)
-      ..position = Vector2(15, 70);
-    add(refreshBtn);
+    add(RefreshButton(refreshGame));
   }
 
   Future<void> createBaskets() async {
     final SpriteComponent loseBasket = SpriteComponent(
       anchor: Anchor.center,
       sprite: await Sprite.load("basket_1_bad.png"),
-      size: Vector2(14.4, 7.3),
+      size: Vector2(gameRef.size.x * 0.193 * 2, gameRef.size.y * .073 * 1.5),
     );
     final SpriteComponent winBasket = SpriteComponent(
       anchor: Anchor.center,
       sprite: await Sprite.load("basket_1.png"),
-      size: Vector2(14.4, 7.3),
+      size: Vector2(gameRef.size.x * 0.193 * 2, gameRef.size.y * .073 * 1.5),
     );
 
     add(SuperGameBasket(
-        pos: Vector2(gameRef.size.x / 6 + 4, gameRef.size.y / 1.4),
+        pos: Vector2(gameRef.size.x * 0.25, gameRef.size.y * 0.75),
         basketCollision: winBasketCollision,
         basketSprite: winBasket));
     add(SuperGameBasket(
-        pos: Vector2(gameRef.size.x / 1.4, gameRef.size.y / 1.4),
+        pos: Vector2(gameRef.size.x * 0.75, gameRef.size.y * 0.75),
         basketCollision: looseBasketCollision,
         basketSprite: loseBasket));
   }
@@ -235,14 +227,13 @@ class SuperGame extends Component with HasGameRef<MainGameScreen> {
     }
     destroyBaskests();
     livesCount = 3;
-    timerTicks = 10;
+    timerTicks = 60;
     prefs.setInt('failScore', 0);
     stopTimer();
     removeCoins();
     clearLives();
     addAll(addLives());
     if (refreshTimer) {
-      coinAmount = 3;
       add(addTimer());
     }
   }
@@ -250,8 +241,8 @@ class SuperGame extends Component with HasGameRef<MainGameScreen> {
   List<Component> addLives() {
     final List<Component> alllives = [];
     for (var i = 0; i < 3; i++) {
-      alllives.add(Lives(Vector2(
-          gameRef.size.x - 5 - i * 2.3, gameRef.size.y / gameRef.size.y + 1)));
+      alllives.add(
+          Lives(Vector2(gameRef.size.x * 0.9 - i * 23, gameRef.size.y * 0.02)));
     }
     return alllives;
   }
@@ -267,36 +258,30 @@ class SuperGame extends Component with HasGameRef<MainGameScreen> {
   }
 }
 
-class RightBtn extends SpriteComponent with Tappable {
+class RightBtn extends SpriteComponent with TapCallbacks {
   final Function addCoin;
 
   RightBtn(this.addCoin);
 
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     addCoin();
-    return super.onTapDown(info);
+    super.onTapDown(event);
   }
 }
 
-class LeftBtn extends SpriteComponent with Tappable {
+class LeftBtn extends SpriteComponent with TapCallbacks {
   final Function addCoin;
 
   LeftBtn(this.addCoin);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     addCoin();
-    return super.onTapDown(info);
+    super.onTapDown(event);
   }
-}
-
-class RefreshBtn extends SpriteComponent with Tappable {
-  final Function refreshGame;
-
-  RefreshBtn(this.refreshGame);
-  @override
-  bool onTapDown(TapDownInfo info) {
-    refreshGame();
-    return super.onTapDown(info);
-  }
+  // @override
+  // bool onTapDown(TapDownInfo info) {
+  //   addCoin();
+  //   return super.onTapDown(info);
+  // }
 }

@@ -8,11 +8,14 @@ class ShopImage extends Component with HasGameRef<MainGameScreen> {
 
   ShopImage(this.img);
   @override
-  FutureOr<void> onLoad() async {
-    await super.onLoad();
+  FutureOr<void> onLoad() {
     add(SpriteComponent()
-      ..sprite = await Sprite.load('shop_back_$img.png')
-      ..size = Vector2(18, 18)
-      ..position = Vector2(11, 17));
+      ..sprite = Sprite(gameRef.images.fromCache('shop_back_$img.png'))
+      ..size = Vector2.all(gameRef.size.x * 0.183 * 3)
+      ..position = Vector2(
+          gameRef.size.x / 2 - gameRef.size.x * 0.183 * 1.5,
+          (gameRef.size.y * 0.15 + gameRef.size.x * 0.282 * 3.5) / 2 -
+              gameRef.size.x * 0.183 * 1.5));
+    super.onLoad();
   }
 }

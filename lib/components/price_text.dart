@@ -10,17 +10,14 @@ class ShopText extends TextComponent with HasGameRef<MainGameScreen> {
   final String inputText;
   final regular = TextPaint(
     style: TextStyle(
-        fontSize: 2.5,
-        color: BasicPalette.white.color,
-        fontFamily: 'Erica One'),
+        fontSize: 23, color: BasicPalette.white.color, fontFamily: 'Erica One'),
   );
   ShopText(this.positionScore, this.inputText);
   @override
-  FutureOr<void> onLoad() async {
-    await super.onLoad();
+  FutureOr<void> onLoad() {
+    super.onLoad();
     text = inputText;
     textRenderer = regular;
     position = positionScore;
-    size = Vector2(10, 1);
   }
 }

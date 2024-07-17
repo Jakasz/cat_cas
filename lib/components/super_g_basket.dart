@@ -5,10 +5,12 @@ import 'package:flame_forge2d/flame_forge2d.dart';
 import 'coin.dart';
 
 class SuperGameBasket extends BodyComponent<MainGameScreen>
-    with ContactCallbacks {
+    with ContactCallbacks, HasGameRef<MainGameScreen> {
   final Vector2 pos;
   final Function basketCollision;
   final SpriteComponent basketSprite;
+  late double bodyX;
+  late double bodyY;
 
   SuperGameBasket(
       {required this.pos,
@@ -22,10 +24,10 @@ class SuperGameBasket extends BodyComponent<MainGameScreen>
       position: pos,
     );
     final List<Vector2> vertices = [
-      Vector2(-7, -3),
-      Vector2(-7, 3),
-      Vector2(7, -3),
-      Vector2(7, 3),
+      Vector2(-bodyX / 2, -bodyY / 2),
+      Vector2(-bodyX / 2, bodyY / 2),
+      Vector2(bodyX / 2, -bodyY / 2),
+      Vector2(bodyX / 2, bodyY / 2),
     ];
     renderBody = false;
     final shape = PolygonShape()..set(vertices);
@@ -37,7 +39,10 @@ class SuperGameBasket extends BodyComponent<MainGameScreen>
 
   @override
   Future<void> onLoad() async {
-    await super.onLoad();
+    bodyX = (basketSprite.size.x);
+    bodyY = (basketSprite.size.y);
+    super.onLoad();
+
     add(basketSprite);
   }
 

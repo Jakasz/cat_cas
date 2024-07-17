@@ -4,7 +4,7 @@ import 'package:cas_cat/components/score.dart';
 import 'package:cas_cat/components/settings_btn.dart';
 import 'package:cas_cat/pages/main_game.dart';
 import 'package:flame/components.dart';
-import 'package:flame/input.dart';
+import 'package:flame/events.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CasCatMenu extends Component with HasGameRef<MainGameScreen> {
@@ -44,74 +44,74 @@ class CasCatMenu extends Component with HasGameRef<MainGameScreen> {
 
     final startBtn = StartBtn(openLevels);
     add(SpriteComponent()
-      ..sprite = await Sprite.load('background_1.png')
+      ..sprite = Sprite(gameRef.images.fromCache('background_7.png'))
       ..size = gameRef.size
       ..position = Vector2.zero());
     final SuperGameBtn superGameBtn = SuperGameBtn(openSuperGame);
     startBtn
-      ..sprite = await Sprite.load('start.png')
-      ..position = Vector2(8, 17.9)
-      ..size = Vector2(22, 8);
+      ..sprite = Sprite(gameRef.images.fromCache('start.png'))
+      ..position = Vector2(81, 179)
+      ..size = Vector2(230, 80);
     add(startBtn);
     superGameBtn
-      ..sprite = await Sprite.load('super_game.png')
-      ..position = Vector2(8, 35)
-      ..size = Vector2(22, 8);
+      ..sprite = Sprite(gameRef.images.fromCache('super_game.png'))
+      ..position = Vector2(80, 357)
+      ..size = Vector2(230, 80);
     add(superGameBtn);
 
     final StoreBtn storeBtn = StoreBtn(openStore);
     storeBtn
-      ..sprite = await Sprite.load('store.png')
-      ..position = Vector2(8, 53)
-      ..size = Vector2(22, 8);
+      ..sprite = Sprite(gameRef.images.fromCache('store.png'))
+      ..position = Vector2(80, 535)
+      ..size = Vector2(230, 80);
     add(storeBtn);
     add(SpriteComponent()
-      ..sprite = await Sprite.load('score_back.png')
-      ..size = Vector2(11, 5)
-      ..position = Vector2(3, 3));
+      ..sprite = Sprite(gameRef.images.fromCache('score_back.png'))
+      ..size = Vector2(117, 54)
+      ..position = Vector2(17, 14));
     add(SpriteComponent()
-      ..sprite = await Sprite.load('score_coin.png')
-      ..size = Vector2.all(3)
-      ..position = Vector2(4, 4.5));
-    add(ScoreText(Vector2(7, 3.6)));
+      ..sprite = Sprite(gameRef.images.fromCache('score_coin.png'))
+      ..size = Vector2.all(26)
+      ..position = Vector2(26, 30));
+    add(ScoreText(Vector2(67, 24)));
     final SettingsButton settingsButton = SettingsButton(openSettings);
     settingsButton
-      ..sprite = await Sprite.load('settings.png')
-      ..position = Vector2(gameRef.size.x - 8, 3)
-      ..size = Vector2(6, 6);
+      ..sprite = Sprite(gameRef.images.fromCache('settings.png'))
+      ..position = Vector2(gameRef.size.x - 74, 17)
+      ..size = Vector2(56, 56);
     add(settingsButton);
   }
 }
 
-class StartBtn extends SpriteComponent with Tappable {
+class StartBtn extends SpriteComponent with TapCallbacks {
   final Function addCoin;
 
   StartBtn(this.addCoin);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     addCoin();
-    return super.onTapDown(info);
+    return super.onTapDown(event);
   }
 }
 
-class SuperGameBtn extends SpriteComponent with Tappable {
+class SuperGameBtn extends SpriteComponent with TapCallbacks {
   final Function addCoin;
 
   SuperGameBtn(this.addCoin);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     addCoin();
-    return super.onTapDown(info);
+    return super.onTapDown(event);
   }
 }
 
-class StoreBtn extends SpriteComponent with Tappable {
+class StoreBtn extends SpriteComponent with TapCallbacks {
   final Function addCoin;
 
   StoreBtn(this.addCoin);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     addCoin();
-    return super.onTapDown(info);
+    return super.onTapDown(event);
   }
 }

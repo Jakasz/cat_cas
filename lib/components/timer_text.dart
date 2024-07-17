@@ -13,9 +13,7 @@ class TimerText extends TextComponent with HasGameRef<MainGameScreen> {
   TimerText({required this.pos, required this.textSize});
   final regular = TextPaint(
     style: TextStyle(
-        fontSize: 1.5,
-        color: BasicPalette.white.color,
-        fontFamily: 'Erica One'),
+        fontSize: 25, color: BasicPalette.white.color, fontFamily: 'Erica One'),
   );
   @override
   FutureOr<void> onLoad() async {

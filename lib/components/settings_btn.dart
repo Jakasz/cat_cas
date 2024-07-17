@@ -1,13 +1,14 @@
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/input.dart';
 
-class SettingsButton extends SpriteComponent with Tappable {
+class SettingsButton extends SpriteComponent with TapCallbacks {
   final Function openSettings;
 
   SettingsButton(this.openSettings);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     openSettings();
-    return super.onTapDown(info);
+    super.onTapDown(event);
   }
 }

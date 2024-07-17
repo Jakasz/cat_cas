@@ -1,12 +1,10 @@
 import 'dart:async';
 
-import 'package:cas_cat/components/lelel_list.dart';
+import 'package:cas_cat/components/level_list.dart';
 import 'package:cas_cat/pages/main_game.dart';
 import 'package:cas_cat/utils/text_render.dart';
 import 'package:flame/components.dart';
-import 'package:flame/input.dart';
-import 'package:flame/palette.dart';
-import 'package:flutter/material.dart';
+import 'package:flame/events.dart';
 
 class Levels extends Component with HasGameRef<MainGameScreen> {
   bool canUseLevels = true;
@@ -27,19 +25,19 @@ class Levels extends Component with HasGameRef<MainGameScreen> {
 
   @override
   FutureOr<void> onLoad() async {
-    await super.onLoad();
+    super.onLoad();
     //background
     add(SpriteComponent()
-      ..sprite = await Sprite.load('level_background.png')
+      ..sprite = Sprite(gameRef.images.fromCache('level_background.png'))
       ..position = Vector2.zero()
       ..size = gameRef.size);
     final ActionButton backButton = ActionButton(returnBack);
     backButton
-      ..sprite = await Sprite.load('left_btn.png')
-      ..position = Vector2(2, 2)
-      ..size = Vector2(6, 6);
+      ..sprite = Sprite(gameRef.images.fromCache('left_btn.png'))
+      ..position = Vector2(14, 18)
+      ..size = Vector2(52, 52);
     add(backButton);
-    final levelList = LevelList(openLevel, buyLevel);
+    final levelList = LevelList(openLevel, buyLevel, gameRef);
     final levels = await levelList.levels;
 
     for (var element in levels) {
@@ -50,14 +48,14 @@ class Levels extends Component with HasGameRef<MainGameScreen> {
       add(element);
     }
     add(SpriteComponent()
-      ..sprite = await Sprite.load('score_back.png')
-      ..size = Vector2(15, 7)
-      ..position = Vector2(13, 3));
+      ..sprite = Sprite(gameRef.images.fromCache('score_back.png'))
+      ..size = Vector2(165, 76)
+      ..position = Vector2(113, 24));
 
     add(TextComponent(
         text: 'LEVELS',
         textRenderer: TextRenderPaint().render,
-        position: Vector2(15.5, 4.7)));
+        position: Vector2(150, 47)));
   }
 
   @override
@@ -67,13 +65,14 @@ class Levels extends Component with HasGameRef<MainGameScreen> {
   }
 }
 
-class ActionButton extends SpriteComponent with Tappable {
+class ActionButton extends SpriteComponent with TapCallbacks {
   final Function action;
 
   ActionButton(this.action);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     action();
-    return super.onTapDown(info);
+
+    super.onTapDown(event);
   }
 }

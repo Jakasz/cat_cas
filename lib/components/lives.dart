@@ -13,7 +13,7 @@ class Lives extends Component with HasGameRef<MainGameScreen> {
 
     add(SpriteComponent()
       ..sprite = await Sprite.load('live.png')
-      ..size = Vector2(2.2, 2.2)
+      ..size = Vector2(22, 22)
       ..position = pos);
   }
 }

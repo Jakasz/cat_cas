@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cas_cat/pages/main_game.dart';
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/input.dart';
 
 class SuperGameNotice extends Component with HasGameRef<MainGameScreen> {
@@ -27,35 +28,35 @@ class SuperGameNotice extends Component with HasGameRef<MainGameScreen> {
   }
 
   @override
-  FutureOr<void> onLoad() async {
-    await super.onLoad();
+  FutureOr<void> onLoad() {
+    super.onLoad();
     add(SpriteComponent()
-      ..sprite = await Sprite.load('super_g_notice.png')
+      ..sprite = Sprite(gameRef.images.fromCache('super_g_notice.png'))
       ..size = gameRef.size
       ..position = Vector2.zero());
     final ActionButton backButton = ActionButton(returnBack);
     backButton
-      ..sprite = await Sprite.load('left_btn.png')
-      ..position = Vector2(2, 4)
-      ..size = Vector2(6, 6);
+      ..sprite = Sprite(gameRef.images.fromCache('left_btn.png'))
+      ..position = Vector2(12, 20)
+      ..size = Vector2(66, 63);
     add(backButton);
 
     final ActionButton goSuperGame = ActionButton(goGame);
     goSuperGame
-      ..sprite = await Sprite.load('start.png')
-      ..size = Vector2(24, 10)
-      ..position = Vector2(8, 46);
+      ..sprite = Sprite(gameRef.images.fromCache('start.png'))
+      ..size = Vector2(229, 81)
+      ..position = Vector2(gameRef.size.x / 2 - 110, gameRef.size.y / 2 + 40);
     add(goSuperGame);
   }
 }
 
-class ActionButton extends SpriteComponent with Tappable {
+class ActionButton extends SpriteComponent with TapCallbacks {
   final Function action;
 
   ActionButton(this.action);
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     action();
-    return super.onTapDown(info);
+    super.onTapDown(event);
   }
 }

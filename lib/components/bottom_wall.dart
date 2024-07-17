@@ -1,9 +1,11 @@
 import 'package:cas_cat/components/coin.dart';
 import 'package:cas_cat/pages/main_game.dart';
+import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class BottomWall extends BodyComponent<MainGameScreen> with ContactCallbacks {
+class BottomWall extends BodyComponent<MainGameScreen>
+    with HasGameRef<MainGameScreen>, ContactCallbacks {
   late final SharedPreferences prefs;
   @override
   Body createBody() {

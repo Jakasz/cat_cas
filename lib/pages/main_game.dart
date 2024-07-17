@@ -1,10 +1,9 @@
 import 'package:cas_cat/utils/routes.dart';
-import 'package:flame/game.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MainGameScreen extends Forge2DGame with HasTappables {
-  MainGameScreen() : super(gravity: Vector2(0, 10));
+class MainGameScreen extends Forge2DGame {
+  // MainGameScreen() : super(gravity: Vector2(0, 10));
   bool openStart = false;
   bool openSuperGame = false;
   bool openStore = false;
